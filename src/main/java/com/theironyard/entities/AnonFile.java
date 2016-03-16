@@ -1,6 +1,8 @@
 package com.theironyard.entities;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 /**
  * Created by zach on 3/16/16.
@@ -10,20 +12,30 @@ import javax.persistence.*;
 public class AnonFile {
     @Id
     @GeneratedValue
-    int id;
+    private int id;
 
-    @Column(nullable = false)
-    String filename;
+    @NotNull
+    private String filename;
 
-    @Column(nullable = false)
-    String originalFilename;
+    @NotNull
+    private String originalFilename;
+
+    @NotNull
+    private String comment;
+
+    @NotNull
+    private LocalDateTime dateTime = LocalDateTime.now();
+
+    @NotNull
+    private boolean isPerm = false;
 
     public AnonFile() {
     }
 
-    public AnonFile(String filename, String originalFilename) {
+    public AnonFile(String filename, String originalFilename, String comment) {
         this.filename = filename;
         this.originalFilename = originalFilename;
+        this.comment = comment;
     }
 
     public int getId() {
@@ -48,5 +60,29 @@ public class AnonFile {
 
     public void setOriginalFilename(String originalFilename) {
         this.originalFilename = originalFilename;
+    }
+
+    public boolean isPerm() {
+        return isPerm;
+    }
+
+    public void setPerm(boolean perm) {
+        isPerm = perm;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
     }
 }

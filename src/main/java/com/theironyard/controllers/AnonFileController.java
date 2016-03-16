@@ -23,16 +23,40 @@ public class AnonFileController {
     AnonFileRepository files;
 
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
-    public void upload(MultipartFile file, HttpServletResponse response) throws IOException {
-        File dir = new File("public/files");
-        dir.mkdirs();
-        File f = File.createTempFile("file", file.getOriginalFilename(), dir);
-        FileOutputStream fos = new FileOutputStream(f);
-        fos.write(file.getBytes());
+    public void upload(MultipartFile file, HttpServletResponse response, Boolean isPerm, String comment) throws IOException {
 
-        AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename());
-        files.save(anonFile);
-
+        if (isPerm != null) {
+            File dir = new File("public/permanent_uploads");
+            dir.mkdirs();
+            File f = File.createTempFile("file", file.getOriginalFilename(), dir);
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(file.getBytes());
+            AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename(), comment);
+            if (comment.isEmpty()) {
+                anonFile.setComment(file.getOriginalFilename());
+            }
+            anonFile.setPerm(true);
+            files.save(anonFile);
+        }
+        else {
+            File dir = new File("public/uploads");
+            dir.mkdirs();
+            File f = File.createTempFile("file", file.getOriginalFilename(), dir);
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(file.getBytes());
+            AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename(), comment);
+            if (comment.isEmpty()) {
+                anonFile.setComment(file.getOriginalFilename());
+            }
+            files.save(anonFile);
+            //could just do an if statement below
+            while (files.countByIsPerm(false) > 3) {//in case james somehow adds a bunch of things to my database this will
+                AnonFile anonFileToDelete = files.findFirstByIsPermOrderByDateTimeAsc(false);//delete all until only the 10 newest remain
+                files.delete(anonFileToDelete);
+                File fileToDelete = new File("public/uploads/" + anonFileToDelete.getFilename());
+                fileToDelete.delete();
+            }
+        }
         response.sendRedirect("/");
     }
 
@@ -40,4 +64,5 @@ public class AnonFileController {
     public List<AnonFile> getFiles() {
         return (List<AnonFile>) files.findAll();
     }
+
 }

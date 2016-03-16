@@ -2,6 +2,8 @@
 <body>
 <form action="/upload" enctype="multipart/form-data" method="post">
     <input type="file" name="file"/>
+    <input type="checkbox" value="TRUE" name="isPerm">
+    <input type="text" placeholder="Short desc of file" name="comment">
     <button type="submit">Upload</button>
 </form>
 <div id="fileList"></div>
