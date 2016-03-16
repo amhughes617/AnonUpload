@@ -50,8 +50,8 @@ public class AnonFileController {
             }
             files.save(anonFile);
             //could just do an if statement below
-            while (files.countByIsPerm(false) > 3) {//in case james somehow adds a bunch of things to my database this will
-                AnonFile anonFileToDelete = files.findFirstByIsPermOrderByDateTimeAsc(false);//delete all until only the 10 newest remain
+            while (files.countByIsPermFalse() > 10) {//in case james somehow adds a bunch of things to my database this will
+                AnonFile anonFileToDelete = files.findFirstByIsPermFalseOrderByDateTimeAsc();//delete all until only the 10 newest remain
                 files.delete(anonFileToDelete);
                 File fileToDelete = new File("public/uploads/" + anonFileToDelete.getFilename());
                 fileToDelete.delete();
