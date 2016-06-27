@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -24,45 +25,40 @@ public class AnonFileController {
 
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public void upload(MultipartFile file, HttpServletResponse response, Boolean isPerm, String comment) throws IOException {
-
+        AnonFile anonFile;
         if (isPerm != null) {
-            File dir = new File("public/permanent_uploads");
-            dir.mkdirs();
-            File f = File.createTempFile("file", file.getOriginalFilename(), dir);
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(file.getBytes());
-            AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename(), comment);
-            if (comment.isEmpty()) {
-                anonFile.setComment(file.getOriginalFilename());
-            }
+            anonFile = writeFile("permanent_uploads", file, comment);
             anonFile.setPerm(true);
-            files.save(anonFile);
         }
         else {
-            File dir = new File("public/uploads");
-            dir.mkdirs();
-            File f = File.createTempFile("file", file.getOriginalFilename(), dir);
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(file.getBytes());
-            AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename(), comment);
-            if (comment.isEmpty()) {
-                anonFile.setComment(file.getOriginalFilename());
-            }
-            files.save(anonFile);
-            //could just do an if statement below
-            while (files.countByIsPermFalse() > 10) {//in case james somehow adds a bunch of things to my database this will
+            anonFile = writeFile("uploads", file, comment);
+            while (files.countByIsPermFalse() > 9) {//in case james somehow adds a bunch of things to my database this will
                 AnonFile anonFileToDelete = files.findFirstByIsPermFalseOrderByDateTimeAsc();//delete all until only the 10 newest remain
                 files.delete(anonFileToDelete);
                 File fileToDelete = new File("public/uploads/" + anonFileToDelete.getFilename());
                 fileToDelete.delete();
             }
         }
+        files.save(anonFile);
         response.sendRedirect("/");
     }
 
     @RequestMapping(path = "/files", method = RequestMethod.GET)
     public List<AnonFile> getFiles() {
         return (List<AnonFile>) files.findAll();
+    }
+
+
+    public AnonFile writeFile(String path, MultipartFile file, String comment) throws IOException {
+        File dir = new File("public/" + path);
+        dir.mkdirs();
+        File f = File.createTempFile("file", file.getOriginalFilename(), dir);
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(file.getBytes());
+        if (comment.isEmpty()) {
+            comment = file.getOriginalFilename();
+        }
+        return new AnonFile(f.getName(), file.getOriginalFilename(), comment);
     }
 
 }
