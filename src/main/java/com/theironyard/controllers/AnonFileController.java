@@ -48,6 +48,15 @@ public class AnonFileController {
         return (List<AnonFile>) files.findAll();
     }
 
+    @RequestMapping(path = "/delete", method = RequestMethod.POST)
+    public void delete(int id, HttpServletResponse response) throws IOException {
+        AnonFile anonFileToDelete = files.findOne(id);
+        files.delete(id);
+        File fileToDelete = new File("public/uploads/" + anonFileToDelete.getFilename());
+        fileToDelete.delete();
+        response.sendRedirect("/");
+    }
+
 
     public AnonFile writeFile(String path, MultipartFile file, String comment) throws IOException {
         File dir = new File("public/" + path);
@@ -60,5 +69,4 @@ public class AnonFileController {
         }
         return new AnonFile(f.getName(), file.getOriginalFilename(), comment);
     }
-
 }

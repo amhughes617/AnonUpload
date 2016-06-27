@@ -8,8 +8,21 @@ function getFiles(filesData) {
             elem.attr("href", "files/" + filesData[i].filename);
             elem.text(filesData[i].comment);
             $("#fileList").append(elem);
-            var elem2 = $("<br>");
+            var elem2 = $("<form>");
+            elem2.attr("id", i)
+            elem2.attr("action", "/delete");
+            elem2.attr("method", "post");
+            var input = $("<input>");
+            input.attr("type", "hidden");
+            input.attr("name", "id");
+            input.attr("value", filesData[i].id)
+            var button = $("<button>");
+            button.attr("type", "submit");
+            button.text("Delete");
             $("#fileList").append(elem2);
+            $("#" + i).append(input);
+            $("#" + i).append(button);
+
             lastFilesData = filesData;
         }
     }
